@@ -1,5 +1,5 @@
 import click
-from ultralytics import YOLO
+from ultralytics import YOLO, RTDETR
 import pandas as pd
 from pathlib import Path
 from glob import glob
@@ -16,14 +16,15 @@ def cli():
 @click.option('--data-path', type=click.Path(exists=True), default='./data/my-dataset', help='Path to training data')
 @click.option('--model-name', type=str, required=True, help='YOLO model to train, e.g., "yolov8n.pt"')
 @click.option('--epochs', type=int, default=10, help='Number of epochs for training')
+@click.option('--batch-size', type=int, default=2, help='Batch size')
 @click.option('--img-size', type=int, default=640, help='Image size for training')
 @click.option('--resume', type=click.Path(exists=True), help='Path to checkpoint to resume training')
-def train(data_path, model_name, epochs, img_size, resume):
+def train(data_path, model_name, epochs, batch_size, img_size, resume):
     """Train the YOLO model."""
     print(f"Training {model_name} on {data_path} for {epochs} epochs at image size {img_size}.")
-    model = YOLO(model_name)
+    model = YOLO(model_name) if "yolo" in model_name else RTDETR(model_name)
     # Training the model
-    model.train(data=data_path, epochs=epochs, imgsz=img_size, resume=resume)
+    model.train(data=data_path, epochs=epochs, batch=batch_size, imgsz=img_size, resume=resume)
     print("Training completed.")
 
 @cli.command()
@@ -64,14 +65,14 @@ def inference(images, model_path, output_csv):
 
 @cli.command()
 @click.option('--model-path', type=click.Path(exists=True), required=True, help='Path to trained YOLO model')
-@click.option('--format', type=click.Choice(['onnx', 'coreml', 'tensorrt', 'tflite']), required=True, help='Export format')
-@click.option('--output-path', type=click.Path(), required=True, help="Path to save exported model")
-def export(model_path, format, output_path):
+@click.option('--img-size', type=int, default=640, help='Image size for training')
+@click.option('--export-format', type=click.Choice(['onnx', 'coreml', 'tensorrt', 'tflite']), required=True, help='Export format')
+def export(model_path, img_size, export_format):
     """Export the YOLO model to a specified format."""
     model = YOLO(model_path)
     # Export the model to the specified format
-    model.export(format=format, imgsz=(640, 640), simplify=True)
-    print(f"Model exported to {output_path} in {format} format.")
+    model.export(format=export_format, imgsz=(img_size, img_size), simplify=True)
+    print(f"Model {model_path} exported to {format} format.")
 
 @cli.command()
 @click.option('--onnx-model-path', type=click.Path(exists=True), required=True, help='Path to YOLO ONNX model')
