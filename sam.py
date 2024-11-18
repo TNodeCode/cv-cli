@@ -8,6 +8,7 @@ from globox import AnnotationSet, Annotation, BoundingBox
 from glob import glob
 from ultralytics import SAM
 import supervision as sv
+from supervision.detection.utils import mask_to_polygons
 from PIL import Image
 
 
@@ -39,7 +40,7 @@ def predict_masks_by_bboxes(model_name: str, images_path: str, annotations: Anno
             # extract mask as 2D boolean numpy array from result
             mask = result[0].masks.data.detach().cpu().squeeze().numpy()
             # convert 2D numpy boolean array to image object
-            mask_image = Image.fromarray(result[0].masks.data.detach().cpu().squeeze().numpy())
+            mask_image = Image.fromarray(mask)
             # save mask as PNG image
             output_image_path = os.path.expanduser(f"{images_path}-seg-l/{filename}-mask{j}-cls{cls}.png")
             mask_image.save(output_image_path)
@@ -65,7 +66,8 @@ with col2:
     output_image_view = st.empty()
  
 if annotation_format == "COCO" and annotation_source.strip() and btn_execute:
-    annotations = list(AnnotationSet.from_coco(file_path=os.path.expanduser(annotation_source)))
+    annotation_set = AnnotationSet.from_coco(file_path=os.path.expanduser(annotation_source))
+    annotations = list(annotation_set)
 
     # load the model
     sam_model = SAM(model_name)
@@ -106,6 +108,12 @@ if annotation_format == "COCO" and annotation_source.strip() and btn_execute:
 
             # extract mask as 2D boolean numpy array from result
             mask = result[0].masks.data.detach().cpu().squeeze().numpy()
+
+            # Create polygon coordinates from mask
+            polygons = mask_to_polygons(mask)
+            polygons = list(map(lambda x: list(list(map(lambda c: int(c), x.reshape(-1)))), polygons))
+            bbox._polygons = polygons
+
             # convert 2D numpy boolean array to image object
             mask_image = Image.fromarray(result[0].masks.data.detach().cpu().squeeze().numpy().astype(int))
             
@@ -117,3 +125,7 @@ if annotation_format == "COCO" and annotation_source.strip() and btn_execute:
  
             input_image_view.image(Detection.plot_detections(input_image.copy(), detection_box))
             output_image_view.image(Detection.plot_detections(input_image.copy(), detection_mask, show_bboxes=False))
+
+        annotation_set.save_coco("new_annotations.json")
+
+        
