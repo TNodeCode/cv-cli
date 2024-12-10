@@ -3,3 +3,5 @@ pandas
 ultralytics
 supervision
 streamlit
+fiftyone
+pycocotools
