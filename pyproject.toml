@@ -1,0 +1,126 @@
+[project]
+name = "cvsdk"
+version = "0.1.0"
+description = "A computer vision library."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1.8",
+    "cvat-sdk>=2.31.0",
+    "dynaconf>=3.2.10",
+    "fiftyone>=1.3.1",
+    "mmcv==2.1",
+    "mmdet>=3.3.0",
+    "mmengine>=0.10.7",
+    "onnxruntime>=1.21.0",
+    "openmim>=0.3.9",
+    "pycocotools>=2.0.8",
+    "pydantic>=2.10.6",
+    "rich>=13.9.4",
+    "structlog>=25.2.0",
+    "timm>=1.0.15",
+    "torch==2.4.1",
+    "torchvision==0.19.1",
+    "ultralytics>=8.3.87",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "pytest",
+]
+
+[tool.uv.sources]
+torchvision = [
+  { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
+  { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["cvsdk"]  # package names should match these glob patterns (["*"] by default)
+exclude = []  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+
+[project.scripts]
+yolo_cli = "cvsdk.yolo_cli:cli"
+foo = "cvsdk.cli:foo"
+imp = "cvsdk.cli:import_coco"
+conf = "cvsdk.cli:conf"
+val = "cvsdk.cli:validate"
+cv = "cvsdk.cli:cli"
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "poetry"
+version_files = ["cvsdk/__init__.py", "pyproject.toml:version"]
+
+[tool.ruff]
+line-length = 100
+fix = true
+include = ["src/**/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflake
+    "I",     # isort
+    "D",     # pydocstyle
+    "C901",  # complexity
+    "N",     # pep8 naming convention
+    "UP",    # pyupgrade
+    "NPY",   # NumPy-specific rules
+    "ASYNC", # flake8-async
+    "S105",  # flake8-bandit: hardcoded-password-string
+    "S106",  # flake8-bandit: hardcoded-password-func-arg
+    "S107",  # flake8-bandit: hardcoded-password-default
+    "C4",    # flake8-comprehensions
+    "ICN",   # flake8-import-conventions
+    "PIE",   # flake8-pie
+    "RET",   # flake8-return
+    "SIM",   # flake8-simplify
+]
+
+ignore = [
+    "D100",   # ignore missing docstring on module level
+    "D104",   # ignore missing docstring on package level
+    "D206",   # indent with spaces, may get conflicts with ruff formatter
+    "D417",   # On top of the Google convention, disable `D417`, which requires documentation for every function parameter.
+    "E501",   # line too long, handled by ruff formatter if possible
+    "RET504", # unnecessary-assign to maintain debuggability
+    "RET505", # unnecessary-branch no autofix
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+modules = ['cvsdk']
+follow_imports = "silent"
+strict_optional = true
+warn_redundant_casts = true
+disallow_any_generics = false
+check_untyped_defs = false
+warn_unused_ignores = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+show_column_numbers = true
+show_error_codes = true
+ignore_missing_imports = false

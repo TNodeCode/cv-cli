@@ -1,5 +1,8 @@
 from mmengine import Config
 from mmengine.runner import Runner
+from dynaconf import Dynaconf
+from cvsdk.mmdet.config import TrainingConfig
+from rich.pretty import pprint
 
 
 class MMDetModels:
@@ -15,38 +18,47 @@ class MMDetModels:
     return MMDetModels.models
   
   @staticmethod
-  def get_config():
+  def get_config(config_file: str, envvar_prefix: str = ""):
+    settings = Dynaconf(
+        envvar_prefix=envvar_prefix,
+        settings_files=[config_file],
+        lowercase_envvars=True,
+    )
+    
+    config_data = {k.lower(): v for k, v in settings.items()}
+    config = TrainingConfig(**config_data)
+
     models = MMDetModels.get_available_models()
-    DATASET_DIR="data/spine/"
-    DATASET_CLASSES=['spine']
+    DATASET_DIR=config.dataset_dir
+    DATASET_CLASSES=config.dataset_classes
 
-    MODEL_TYPE="cascade_rcnn"
-    MODEL_NAME=models[MODEL_TYPE][3]
-    BATCH_SIZE=2
-    NUM_CLASSES=1
-    EPOCHS=36
-    WORK_DIR=f"work_dirs/{MODEL_TYPE}/{MODEL_NAME}"
+    MODEL_TYPE=config.model_type
+    MODEL_NAME=config.model_name
+    BATCH_SIZE=config.batch_size
+    NUM_CLASSES=len(config.dataset_classes)
+    EPOCHS=config.epochs
+    WORK_DIR=f"{config.work_dir}/{MODEL_TYPE}/{MODEL_NAME}"
 
-    ANN_TRAIN="instances_train2017_mixed.json"
-    ANN_VAL="instances_val2017_mixed.json"
-    ANN_TEST="instances_test2017_mixed.json"
+    ANN_TRAIN=config.annotations_train
+    ANN_VAL=config.annotations_val
+    ANN_TEST=config.annotations_test
 
-    OPTIMIZER="ADAMW"
+    OPTIMIZER=config.optimizer
 
     cfg = Config.fromfile(f"mmdetection/configs/{MODEL_TYPE}/{MODEL_NAME}.py")
 
     if OPTIMIZER=="SGD":
       cfg.optim_wrapper.optimizer = {
         'type': 'SGD',
-        'lr': 0.02,
-        'momentum': 0.9,
-        'weight_decay': 0.0001,
+        'lr': config.lr,
+        'momentum': config.momentum,
+        'weight_decay': config.weight_decay,
       }
     else:
       cfg.optim_wrapper.optimizer = {
         'type': 'AdamW',
-        'lr': 1e-4,
-        'weight_decay': 0.05,
+        'lr': config.lr,
+        'weight_decay': config.weight_decay,
       }
 
     # Here we can define image augmentations used for training.
@@ -55,32 +67,32 @@ class MMDetModels:
       dict(type='LoadImageFromFile', backend_args=None),
       dict(type='LoadAnnotations', with_bbox=True),
       dict(type='Resize', scale=(1333, 800), keep_ratio=True),
-      dict(type='RandomFlip', prob=0.5, direction="horizontal"), 
-      dict(type='RandomFlip', prob=0.5, direction="vertical"),
-      dict(type='RandomFlip', prob=0.5, direction="diagonal"),
-      dict(type='RandomAffine', max_rotate_degree=25.0, max_translate_ratio=0.1, scaling_ratio_range=(0.5, 1.5), max_shear_degree=5.0),
-      dict(type='PackDetInputs')
     ]
 
+    train_pipeline += config.augmentations
+
+    train_pipeline += [
+      dict(type='PackDetInputs')
+    ]
 
     if MODEL_TYPE == "yolox":
       # YoloX uses MultiImageMixDataset, has to be configured differently
       cfg.train_dataloader.dataset.dataset.data_root=DATASET_DIR
       cfg.train_dataloader.dataset.dataset.ann_file=f"annotations/{ANN_TRAIN}"
-      cfg.train_dataloader.dataset.dataset.data_prefix.img="train2017/"
+      cfg.train_dataloader.dataset.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     else:
       cfg.train_dataloader.dataset.data_root=DATASET_DIR
       cfg.train_dataloader.dataset.ann_file=f"annotations/{ANN_TRAIN}"
-      cfg.train_dataloader.dataset.data_prefix.img="train2017/"
+      cfg.train_dataloader.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     cfg.val_dataloader.dataset.data_root=DATASET_DIR
-    cfg.val_dataloader.dataset.data_prefix.img="val2017/"
+    cfg.val_dataloader.dataset.data_prefix.img=f"{config.val_dir}/"
     cfg.val_dataloader.dataset.ann_file=f"annotations/{ANN_VAL}"
     cfg.val_evaluator.ann_file=f"{DATASET_DIR}annotations/{ANN_VAL}"
     cfg.val_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     cfg.test_dataloader.dataset.data_root=DATASET_DIR
-    cfg.test_dataloader.dataset.data_prefix.img="test2017/"
+    cfg.test_dataloader.dataset.data_prefix.img=f"{config.test_dir}/"
     cfg.test_dataloader.dataset.ann_file=f"annotations/{ANN_TEST}"
     cfg.test_evaluator.ann_file=f"{DATASET_DIR}annotations/{ANN_TEST}"
     cfg.train_cfg.max_epochs=EPOCHS
@@ -103,7 +115,7 @@ class MMDetModels:
     return cfg
 
   @staticmethod
-  def train():
-    cfg = MMDetModels.get_config()
+  def train(config_file: str):
+    cfg = MMDetModels.get_config(config_file=config_file)
     runner = Runner.from_cfg(cfg)
     runner.train()

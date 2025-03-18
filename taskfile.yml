@@ -1,0 +1,16 @@
+version: "3"
+
+tasks:
+  download-mmdet:
+    desc: Download the mmdetection repository
+    cmds:
+      - git clone https://github.com/open-mmlab/mmdetection.git
+    dir: .
+  
+  install-mmdet:
+    desc: Download the mmdetection repository
+    cmds:
+      - mim install -U mmengine
+      - mim install -U mmcv==2.1
+      - mim install -U mmdet
+    dir: .

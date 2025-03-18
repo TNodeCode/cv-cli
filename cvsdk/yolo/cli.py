@@ -8,11 +8,11 @@ import cv2
 import numpy as np
 
 @click.group()
-def cli():
+def yolo():
     """CLI for training and managing a YOLO model on a custom dataset."""
     pass
 
-@cli.command()
+@yolo.command()
 @click.option('--data-path', type=click.Path(exists=True), default='./data/my-dataset', help='Path to training data')
 @click.option('--model-name', type=str, required=True, help='YOLO model to train, e.g., "yolov8n.pt"')
 @click.option('--epochs', type=int, default=10, help='Number of epochs for training')
@@ -27,7 +27,7 @@ def train(data_path, model_name, epochs, batch_size, img_size, resume):
     model.train(data=data_path, epochs=epochs, batch=batch_size, imgsz=img_size, resume=resume)
     print("Training completed.")
 
-@cli.command()
+@yolo.command()
 @click.option('--data-path', type=click.Path(exists=True), required=True, help='Path to validation data')
 @click.option('--model-path', type=click.Path(exists=True), required=True, help='Path to trained YOLO model')
 def val(data_path, model_path):
@@ -37,7 +37,7 @@ def val(data_path, model_path):
     results = model.val(data=data_path)
     print(f"Validation Results: {results}")
 
-@cli.command()
+@yolo.command()
 @click.option('--images', type=str, required=True, help='Glob string for images to run inference on')
 @click.option('--model-path', type=click.Path(exists=True), required=True, help='Path to trained YOLO model')
 @click.option('--output-csv', type=click.Path(), help="Path to save detections as CSV")
@@ -63,7 +63,7 @@ def inference(images, model_path, output_csv):
         pd.DataFrame(detections).to_csv(output_csv, index=False)
         print(f"Saved detections to {output_csv}")
 
-@cli.command()
+@yolo.command()
 @click.option('--model-path', type=click.Path(exists=True), required=True, help='Path to trained YOLO model')
 @click.option('--img-size', type=int, default=640, help='Image size for training')
 @click.option('--export-format', type=click.Choice(['onnx', 'coreml', 'tensorrt', 'tflite']), required=True, help='Export format')
@@ -74,7 +74,7 @@ def export(model_path, img_size, export_format):
     model.export(format=export_format, imgsz=(img_size, img_size), simplify=True)
     print(f"Model {model_path} exported to {format} format.")
 
-@cli.command()
+@yolo.command()
 @click.option('--onnx-model-path', type=click.Path(exists=True), required=True, help='Path to YOLO ONNX model')
 @click.option('--image-path', type=click.Path(exists=True), required=True, help='Path to an image')
 def onnx_inference(onnx_model_path, image_path):

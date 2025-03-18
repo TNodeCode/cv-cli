@@ -1,8 +1,17 @@
+# Config files
+configs/
+
 # Data files
 *.cache
 *.csv
 datasets/
 data/
+mmdetection/
+results/
+work_dirs/
+
+# Scripts
+*.sh
 
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
 *.jpg
@@ -42,11 +51,6 @@ data/images/*
 !data/*.sh
 
 results*.csv
-
-# Datasets -------------------------------------------------------------------------------------------------------------
-coco/
-coco128/
-VOC/
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
 *.m~
@@ -261,3 +265,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Ignore dynaconf secret files
+.secrets.*
