@@ -8,6 +8,7 @@ def mmdet():
 
 @mmdet.command()
 @click.argument("config-file", type=click.Path(exists=True, file_okay=True, dir_okay=True))
-def train(config_file: str):
+@click.argument("load-from", required=False, type=click.Path(exists=True, file_okay=True, dir_okay=True))
+def train(config_file: str, load_from: str | None):
     """Train the MMDet model."""
-    MMDetModels.train(config_file=config_file)
+    MMDetModels.train(config_file=config_file, load_from=load_from)

@@ -2,10 +2,11 @@ from mmengine import Config
 from mmengine.runner import Runner
 from dynaconf import Dynaconf
 from cvsdk.mmdet.config import TrainingConfig
-from rich.pretty import pprint
 
 
 class MMDetModels:
+  """MMDetection models class.
+  """
   models = {
     "faster_rcnn": ["faster-rcnn_r50_fpn_1x_coco", "faster-rcnn_r101_fpn_1x_coco", "faster-rcnn_x101-32x4d_fpn_1x_coco", "faster-rcnn_x101-64x4d_fpn_1x_coco"],
     "cascade_rcnn": ["cascade-rcnn_r50_fpn_1x_coco", "cascade-rcnn_r101_fpn_1x_coco", "cascade-rcnn_x101-32x4d_fpn_1x_coco", "cascade-rcnn_x101-64x4d_fpn_1x_coco"],
@@ -14,11 +15,26 @@ class MMDetModels:
   }
 
   @staticmethod
-  def get_available_models():
+  def get_available_models() -> dict[str, list[str]]:
+    """Get available models.
+
+    Returns:
+        dict[str, list[str]]: Dictionary of available models.
+    """
     return MMDetModels.models
   
   @staticmethod
-  def get_config(config_file: str, envvar_prefix: str = ""):
+  def get_config(config_file: str, envvar_prefix: str = "", load_from: str | None = None) -> Config:
+    """Load a configuration.
+
+    Args:
+        config_file (str): YAML training configuration file
+        envvar_prefix (str, optional): Prefix for environment variables. Defaults to "".
+        load_from (str | None, optional): Path to checkpoint file with pretrained weights. Defaults to None.
+
+    Returns:
+        Config: MMDetection configuration
+    """
     settings = Dynaconf(
         envvar_prefix=envvar_prefix,
         settings_files=[config_file],
@@ -28,7 +44,6 @@ class MMDetModels:
     config_data = {k.lower(): v for k, v in settings.items()}
     config = TrainingConfig(**config_data)
 
-    models = MMDetModels.get_available_models()
     DATASET_DIR=config.dataset_dir
     DATASET_CLASSES=config.dataset_classes
 
@@ -46,6 +61,8 @@ class MMDetModels:
     OPTIMIZER=config.optimizer
 
     cfg = Config.fromfile(f"mmdetection/configs/{MODEL_TYPE}/{MODEL_NAME}.py")
+    print("LOAD FROM", load_from)
+    cfg.load_from = load_from
 
     if OPTIMIZER=="SGD":
       cfg.optim_wrapper.optimizer = {
@@ -115,7 +132,7 @@ class MMDetModels:
     return cfg
 
   @staticmethod
-  def train(config_file: str):
-    cfg = MMDetModels.get_config(config_file=config_file)
+  def train(config_file: str, load_from: str | None = None):
+    cfg = MMDetModels.get_config(config_file=config_file, load_from=load_from)
     runner = Runner.from_cfg(cfg)
     runner.train()
