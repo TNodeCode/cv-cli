@@ -16,7 +16,7 @@ def fiftyone():
 @click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-def app(root_dir, annotations, images):
+def show(root_dir, annotations, images):
     """
     Starts a FiftyOne application to inspect a computer vision object detection dataset.
     """
@@ -37,6 +37,95 @@ def app(root_dir, annotations, images):
         session.wait()
     except KeyboardInterrupt:
         print("\nSession terminated by user.")
+
+
+@fiftyone.command()
+@click.option('--root-dir', type=click.Path(exists=True), required=True,
+              help='Root directory containing images and annotations')
+@click.option('--annotations', type=str, required=True,
+              help='Path to the input COCO JSON annotation file')
+@click.option('--images', type=str, required=True,
+              help='Directory where images are stored relative to root-dir')
+@click.option('--output', type=str, required=True,
+              help='Path to save the new COCO JSON annotation file')
+def annotate(root_dir, annotations, images, output):
+    """
+    Loads a COCO dataset, sends it to CVAT for annotation, merges the new annotations,
+    and exports them as a new COCO JSON file.
+    """
+    #os.environ["FIFTYONE_CVAT_USERNAME"] = "john.doe"
+    #os.environ["FIFTYONE_CVAT_PASSWORD"] = "Test_1234"
+
+    # 1. Load the COCO dataset into FiftyOne
+    dataset = fo.Dataset.from_dir(
+        dataset_type=fo.types.COCODetectionDataset,
+        data_path=os.path.join(root_dir, images),
+        labels_path=os.path.join(root_dir, annotations),
+    )
+
+    print(f"Loaded dataset '{dataset.name}' with {len(dataset)} samples.")
+    
+    # (Optional) Launch the FiftyOne App to inspect your dataset
+    session = fo.launch_app(dataset)
+    print("FiftyOne app is running. You can inspect your dataset now.")
+
+    # 2. Send the dataset to CVAT for annotation.
+    # Choose a unique annotation run key and specify the label field to annotate.
+    anno_key = "cvat_anno_run"
+    label_types = ['classification', 'classifications', 'detection', 'detections', 'instance', 'instances', 'polyline', 'polylines', 'polygon', 'polygons', 'keypoint', 'keypoints', 'segmentation', 'scalar']
+    label_type = label_types[3]
+    label_fields = dataset._get_label_fields()
+    label_field = label_fields[0]
+    print("LABEL TYPE: ", label_type)
+    print("LABEL FIELDS: ", label_fields)
+    print("LABEL FIELD: ", label_field)
+
+    
+    # This call uploads the samples (and existing labels, if any) to CVAT.
+    # The 'launch_editor=True' flag will automatically open the CVAT editor.
+    dataset.annotate(
+        anno_key,
+        label_field=label_type,  # change this if your labels are stored under a different field
+        label_type=label_field,
+        classes=["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        backend="cvat",
+        url="http://localhost:8080", # TODO use environment variables
+        username="john.doe", # TODO use environment variables
+        password="Test_1234", # TODO use environment variables
+        launch_editor=True,
+    )
+    print("Dataset sent to CVAT. Please annotate the data in CVAT and save your changes.")
+
+    # Wait for the user to finish annotating in CVAT
+    input("Press Enter after you have completed annotation in CVAT and saved your work...")
+
+    # 3. Merge the new annotations back into your FiftyOne dataset.
+    dataset.load_annotations(anno_key)
+    print("Annotations have been loaded back into the dataset.")
+    
+    # (Optional) Update the FiftyOne App view to inspect the annotated data
+    session.dataset = dataset
+
+    # 4. Export the updated dataset (annotations only) in COCO format.
+    # Here, we export the labels to a new JSON file.
+    output_dir = os.path.dirname(output)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    dataset.export(
+        export_dir=output_dir,
+        dataset_type=fo.types.COCODetectionDataset,
+        label_field=label_field,
+        labels_path=output,
+        include_media=False  # Set to True if you want to copy the image files as well
+    )
+
+    # Delete tasks from CVAT
+    results = dataset.load_annotation_results(anno_key)
+    results.cleanup()
+
+    # Delete run record (not the labels) from FiftyOne
+    dataset.delete_annotation_run(anno_key)
+    print(f"New COCO annotations saved to: {output}")
 
 
 @fiftyone.command()

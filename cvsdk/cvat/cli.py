@@ -6,6 +6,7 @@ import click
 from cvat_sdk import make_client
 from cvat_sdk.core.proxies.tasks import ResourceType
 
+
 def get_client(host, port, username, password):
     # If host already contains a colon, assume port was specified
     server = f"{host}:{port}" if ":" not in host else host
@@ -34,12 +35,14 @@ def import_coco_dataset():
     port=8080
     username="john.doe"
     password="Test_1234"
+
+    project_id=1
+    owner_id=1
+    assignee_id=1
     task_name="spine"
     coco_json="data/7s/annotations/instances_val2017.json"
     with open(coco_json) as fp:
         content=json.load(fp)
-    print(content["categories"])
-    #exit()
     images_dir="data/7s/val2017"
     labels = [{
         "name": category["name"],
@@ -55,7 +58,12 @@ def import_coco_dataset():
     
     with get_client(host, port, username, password) as client:
         
-        task_spec = {"name": task_name, "labels": labels}
+        task_spec = {
+            "project_id": project_id,
+            "owner_id": owner_id,
+            "assignee_id": assignee_id,
+            "name": task_name,
+        }
 
         # List image files from the given directory (supported extensions)
         supported_ext = ('.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff')
@@ -181,6 +189,3 @@ def export_coco_dataset(host, port, username, password, task_id, format, output)
         with open(output, "wb") as out_file:
             out_file.write(export_response.read())
         click.echo("Dataset exported successfully.")
-
-if __name__ == '__main__':
-    cli()
