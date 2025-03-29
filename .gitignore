@@ -4,6 +4,7 @@ configs/
 # Data files
 *.cache
 *.csv
+*.pth
 datasets/
 data/
 mmdetection/

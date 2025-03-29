@@ -95,27 +95,28 @@ class MMDetModels:
     if MODEL_TYPE == "yolox":
       # YoloX uses MultiImageMixDataset, has to be configured differently
       cfg.train_dataloader.dataset.dataset.data_root=DATASET_DIR
-      cfg.train_dataloader.dataset.dataset.ann_file=f"annotations/{ANN_TRAIN}"
+      cfg.train_dataloader.dataset.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     else:
       cfg.train_dataloader.dataset.data_root=DATASET_DIR
-      cfg.train_dataloader.dataset.ann_file=f"annotations/{ANN_TRAIN}"
+      cfg.train_dataloader.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     cfg.val_dataloader.dataset.data_root=DATASET_DIR
     cfg.val_dataloader.dataset.data_prefix.img=f"{config.val_dir}/"
-    cfg.val_dataloader.dataset.ann_file=f"annotations/{ANN_VAL}"
-    cfg.val_evaluator.ann_file=f"{DATASET_DIR}annotations/{ANN_VAL}"
+    cfg.val_dataloader.dataset.ann_file=f"{ANN_VAL}"
+    cfg.val_evaluator.ann_file=f"{DATASET_DIR}{ANN_VAL}"
     cfg.val_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
     cfg.test_dataloader.dataset.data_root=DATASET_DIR
     cfg.test_dataloader.dataset.data_prefix.img=f"{config.test_dir}/"
-    cfg.test_dataloader.dataset.ann_file=f"annotations/{ANN_TEST}"
-    cfg.test_evaluator.ann_file=f"{DATASET_DIR}annotations/{ANN_TEST}"
+    cfg.test_dataloader.dataset.ann_file=f"{ANN_TEST}"
+    cfg.test_evaluator.ann_file=f"{DATASET_DIR}{ANN_TEST}"
     cfg.train_cfg.max_epochs=EPOCHS
     cfg.default_hooks.logger.interval=10
     if MODEL_TYPE == "faster_rcnn":
       cfg.model.roi_head.bbox_head.num_classes=NUM_CLASSES
+      cfg.model.backbone.frozen_stages=4
     elif MODEL_TYPE == "cascade_rcnn":
       cfg.model.roi_head.bbox_head[0].num_classes=NUM_CLASSES
       cfg.model.roi_head.bbox_head[1].num_classes=NUM_CLASSES
@@ -128,7 +129,7 @@ class MMDetModels:
     cfg.val_dataloader.batch_size=BATCH_SIZE
     cfg.test_dataloader.batch_size=BATCH_SIZE
     cfg.work_dir=WORK_DIR
-    cfg.resume = True
+    cfg.resume = True if load_from is None else False
     return cfg
 
   @staticmethod

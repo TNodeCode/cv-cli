@@ -8,7 +8,7 @@ tasks:
     dir: .
   
   install-mmdet:
-    desc: Download the mmdetection repository
+    desc: Install the mmdetection library
     cmds:
       - mim install -U mmengine
       - mim install -U mmcv==2.1
