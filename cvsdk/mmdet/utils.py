@@ -1,7 +1,11 @@
+import torch
+import torch.nn as nn
 from mmengine import Config
 from mmengine.runner import Runner
+from mmdet.apis import init_detector
 from dynaconf import Dynaconf
 from cvsdk.mmdet.config import TrainingConfig
+from collections import OrderedDict
 
 
 class MMDetModels:
@@ -136,3 +140,25 @@ class MMDetModels:
     cfg = MMDetModels.get_config(config_file=config_file, load_from=load_from)
     runner = Runner.from_cfg(cfg)
     runner.train()
+
+  @staticmethod
+  def extract_backbone(config_file: str, output_file: str, load_from: str | None = None):
+    config: Config = Config.fromfile(config_file)
+    model: nn.Module = init_detector(config, load_from, device="cpu")
+    state_dict: OrderedDict = model.backbone.state_dict()
+    torch.save(model.backbone.state_dict(), output_file)
+  
+  @staticmethod
+  def copy_backbone(
+    source_config_file: str,
+    target_config_file: str,
+    output_file: str,
+    load_from: str | None = None
+  ):
+    config_source: Config = Config.fromfile(source_config_file)
+    config_target: Config = Config.fromfile(target_config_file)
+    model_source: nn.Module = init_detector(config_source, load_from, device="cpu")
+    model_target: nn.Module = init_detector(config_target, None, device="cpu")
+    source_backbone_state_dict: OrderedDict = model_source.backbone.state_dict()
+    model_target.backbone.load_state_dict(source_backbone_state_dict)
+    torch.save(model_target.backbone.state_dict(), output_file)
