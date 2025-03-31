@@ -116,7 +116,6 @@ class MMDetModels:
     cfg.default_hooks.logger.interval=10
     if MODEL_TYPE == "faster_rcnn":
       cfg.model.roi_head.bbox_head.num_classes=NUM_CLASSES
-      cfg.model.backbone.frozen_stages=4
     elif MODEL_TYPE == "cascade_rcnn":
       cfg.model.roi_head.bbox_head[0].num_classes=NUM_CLASSES
       cfg.model.roi_head.bbox_head[1].num_classes=NUM_CLASSES
