@@ -10,6 +10,7 @@ data/
 mmdetection/
 results/
 work_dirs/
+tmp/
 
 # Scripts
 *.sh

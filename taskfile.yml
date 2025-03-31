@@ -14,3 +14,11 @@ tasks:
       - mim install -U mmcv==2.1
       - mim install -U mmdet
     dir: .
+
+  run-tests:
+    desc: Run tests
+    cmds:
+      - pytest tests/
+    dir: .
+  
+  
