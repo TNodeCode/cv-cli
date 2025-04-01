@@ -6,6 +6,11 @@ from mmdet.apis import init_detector
 from dynaconf import Dynaconf
 from cvsdk.mmdet.config import TrainingConfig
 from collections import OrderedDict
+from rich.pretty import pprint
+from structlog import get_logger
+
+logger = get_logger()
+
 
 
 class MMDetModels:
@@ -157,8 +162,21 @@ class MMDetModels:
   ):
     config_source: Config = Config.fromfile(source_config_file)
     config_target: Config = Config.fromfile(target_config_file)
+    logger.info("Loading source model", config_file=source_config_file, load_from=load_from)
     model_source: nn.Module = init_detector(config_source, load_from, device="cpu")
+    logger.info("Loading target model", config_file=target_config_file, load_from=None)
     model_target: nn.Module = init_detector(config_target, None, device="cpu")
+    source_layers = set(model_source.backbone.state_dict().keys())
+    target_layers = set(model_target.backbone.state_dict().keys())
+    if not source_layers - target_layers and not target_layers - source_layers:
+      logger.info("Source and target backbone are identical")
+    if source_layers - target_layers:
+      logger.warning("Source layer contains layers that do not exist in the target layer")
+      pprint(source_layers - target_layers)
+    if target_layers - source_layers:
+      logger.warning("Target layer contains layers that do not exist in the source layer")
+      pprint(target_layers - source_layers)
     source_backbone_state_dict: OrderedDict = model_source.backbone.state_dict()
     model_target.backbone.load_state_dict(source_backbone_state_dict)
+    logger.info("Storing target model with copied backbone weights from source model", output_file=output_file)
     torch.save(model_target.backbone.state_dict(), output_file)
