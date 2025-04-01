@@ -123,6 +123,14 @@ class MMDetModels:
     cfg.test_evaluator.ann_file=f"{DATASET_DIR}{ANN_TEST}"
     cfg.train_cfg.max_epochs=EPOCHS
     cfg.default_hooks.logger.interval=10
+
+    if config.backbone:
+      cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
+      cfg.model.backbone.frozen_stages = config.backbone.frozen_stages
+      cfg.model.backbone.depth = config.backbone.depth
+      cfg.model.backbone.out_indices = config.backbone.out_indices
+      cfg.model.neck.in_channels = config.backbone.out_channels
+
     if MODEL_TYPE == "faster_rcnn":
       cfg.model.roi_head.bbox_head.num_classes=NUM_CLASSES
     elif MODEL_TYPE == "cascade_rcnn":
@@ -158,12 +166,14 @@ class MMDetModels:
     source_config_file: str,
     target_config_file: str,
     output_file: str,
-    load_from: str | None = None
+    load_source_from: str | None = None
   ):
+    _state = torch.load(load_source_from)
+    pprint(_state.keys())
     config_source: Config = Config.fromfile(source_config_file)
     config_target: Config = Config.fromfile(target_config_file)
-    logger.info("Loading source model", config_file=source_config_file, load_from=load_from)
-    model_source: nn.Module = init_detector(config_source, load_from, device="cpu")
+    logger.info("Loading source model", config_file=source_config_file, source=load_source_from)
+    model_source: nn.Module = init_detector(config_source, load_source_from, device="cpu")
     logger.info("Loading target model", config_file=target_config_file, load_from=None)
     model_target: nn.Module = init_detector(config_target, None, device="cpu")
     source_layers = set(model_source.backbone.state_dict().keys())
@@ -179,4 +189,4 @@ class MMDetModels:
     source_backbone_state_dict: OrderedDict = model_source.backbone.state_dict()
     model_target.backbone.load_state_dict(source_backbone_state_dict)
     logger.info("Storing target model with copied backbone weights from source model", output_file=output_file)
-    torch.save(model_target.backbone.state_dict(), output_file)
+    torch.save(OrderedDict({'state_dict': model_target.state_dict()}), output_file)

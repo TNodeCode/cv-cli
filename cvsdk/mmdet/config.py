@@ -1,4 +1,12 @@
 from pydantic import BaseModel
+from typing import Literal
+
+class BackboneConfig(BaseModel):
+    checkpoint: str
+    depth: Literal[18,34,50,101,152]
+    frozen_stages: Literal[0,1,2,3,4]
+    out_indices: list[int]
+    out_channels: list[int]
 
 
 class TrainingConfig(BaseModel):
@@ -6,6 +14,7 @@ class TrainingConfig(BaseModel):
     """
     model_type: str
     model_name: str
+    backbone: BackboneConfig | None
     dataset_dir: str
     train_dir: str
     val_dir: str
