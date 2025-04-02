@@ -61,7 +61,7 @@ class MMDetModels:
     BATCH_SIZE=config.batch_size
     NUM_CLASSES=len(config.dataset_classes)
     EPOCHS=config.epochs
-    WORK_DIR=f"{config.work_dir}/{MODEL_TYPE}/{MODEL_NAME}"
+    WORK_DIR=config.work_dir
 
     ANN_TRAIN=config.annotations_train
     ANN_VAL=config.annotations_val
@@ -157,8 +157,7 @@ class MMDetModels:
   @staticmethod
   def extract_backbone(config_file: str, output_file: str, load_from: str | None = None):
     config: Config = Config.fromfile(config_file)
-    model: nn.Module = init_detector(config, load_from, device="cpu")
-    state_dict: OrderedDict = model.backbone.state_dict()
+    model: nn.Module = init_detector(config, load_from, device="cpu").eval()
     torch.save(model.backbone.state_dict(), output_file)
   
   @staticmethod
@@ -173,9 +172,9 @@ class MMDetModels:
     config_source: Config = Config.fromfile(source_config_file)
     config_target: Config = Config.fromfile(target_config_file)
     logger.info("Loading source model", config_file=source_config_file, source=load_source_from)
-    model_source: nn.Module = init_detector(config_source, load_source_from, device="cpu")
+    model_source: nn.Module = init_detector(config_source, load_source_from, device="cpu").eval()
     logger.info("Loading target model", config_file=target_config_file, load_from=None)
-    model_target: nn.Module = init_detector(config_target, None, device="cpu")
+    model_target: nn.Module = init_detector(config_target, None, device="cpu").eval()
     source_layers = set(model_source.backbone.state_dict().keys())
     target_layers = set(model_target.backbone.state_dict().keys())
     if not source_layers - target_layers and not target_layers - source_layers:

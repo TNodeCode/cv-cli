@@ -6,9 +6,9 @@ Load Faster R-CNN model from configuration file `work_dirs/faster_rcnn/faster-rc
 
 ```bash
 cv mmdet extract-backbone \
-    work_dirs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
-    work_dirs/backbone1.pth \
-    work_dirs/faster_rcnn/epoch_1.pth
+    --config-file work_dirs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
+    --load-from work_dirs/faster_rcnn/epoch_1.pth \
+    --output-file work_dirs/faster_rcnn_backbone.pth
 ```
 
 ## Copy Backbone
@@ -17,8 +17,8 @@ Copy the backbone from one model to the other model. The example command loads a
 
 ```bash
 cv mmdet copy-backbone \
-    work_dirs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
-    mmdetection/configs/deformable_detr/deformable-detr_r50_16xb2-50e_coco.py \
-    work_dirs/def_detr.pth \
-    work_dirs/faster_rcnn/epoch_1.pth
+    --source-config-file work_dirs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
+    --load-source-from work_dirs/faster_rcnn/epoch_1.pth \
+    --target-config-file mmdetection/configs/deformable_detr/deformable-detr_r50_16xb2-50e_coco.py \
+    --output-file work_dirs/updated_deformable_detr.pth
 ```
