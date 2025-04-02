@@ -69,18 +69,18 @@ class MMDetModels:
 
     OPTIMIZER=config.optimizer
 
-    cfg = Config.fromfile(f"mmdetection/configs/{MODEL_TYPE}/{MODEL_NAME}.py")
+    cfg = Config.fromfile(f"{config.config_path}/{config.model_type}/{config.model_name}.py")
     print("LOAD FROM", load_from)
     cfg.load_from = load_from
 
-    if OPTIMIZER=="SGD":
+    if OPTIMIZER=="sgd":
       cfg.optim_wrapper.optimizer = {
         'type': 'SGD',
         'lr': config.lr,
         'momentum': config.momentum,
         'weight_decay': config.weight_decay,
       }
-    else:
+    elif OPTIMIZER=="adamw":
       cfg.optim_wrapper.optimizer = {
         'type': 'AdamW',
         'lr': config.lr,
@@ -92,7 +92,6 @@ class MMDetModels:
     train_pipeline = [
       dict(type='LoadImageFromFile', backend_args=None),
       dict(type='LoadAnnotations', with_bbox=True),
-      dict(type='Resize', scale=(1333, 800), keep_ratio=True),
     ]
 
     train_pipeline += config.augmentations
@@ -107,11 +106,13 @@ class MMDetModels:
       cfg.train_dataloader.dataset.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
+      cfg.train_dataloader.dataset.dataset.pipeline = train_pipeline
     else:
       cfg.train_dataloader.dataset.data_root=DATASET_DIR
       cfg.train_dataloader.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
+      cfg.train_dataloader.dataset.pipeline = train_pipeline
     cfg.val_dataloader.dataset.data_root=DATASET_DIR
     cfg.val_dataloader.dataset.data_prefix.img=f"{config.val_dir}/"
     cfg.val_dataloader.dataset.ann_file=f"{ANN_VAL}"

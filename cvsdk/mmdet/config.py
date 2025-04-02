@@ -12,6 +12,7 @@ class BackboneConfig(BaseModel):
 class TrainingConfig(BaseModel):
     """Model configuration
     """
+    config_path: str
     model_type: str
     model_name: str
     backbone: BackboneConfig | None
