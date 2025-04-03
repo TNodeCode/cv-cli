@@ -35,6 +35,7 @@ def detect(
         batch_size=batch_size
     )
 
+    detected_bboxes = []
     for epoch in epochs:
         logger.info(f"Detections for epoch {epoch} ...")
         weight_file = f"{work_dir}/epoch_{epoch}.pth"
@@ -56,7 +57,6 @@ def detect(
             return
         n_batches=(n_files // batch_size) + 1
 
-        detected_bboxes = []
         durations = []
         pbar = tqdm(range((n_files // batch_size) + 1))
         for b in pbar:
