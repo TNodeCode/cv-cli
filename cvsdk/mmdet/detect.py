@@ -35,9 +35,9 @@ def detect(
         batch_size=batch_size
     )
 
-    for epoch, weight_file in enumerate(epochs):
+    for epoch in epochs:
         logger.info(f"Detections for epoch {epoch} ...")
-        weght_file = f"{work_dir}/epoch_{epoch}.pth"
+        weight_file = f"{work_dir}/epoch_{epoch}.pth"
         # Initialize the model
         logger.info("Loading model ...")
         model = init_detector(
