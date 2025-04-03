@@ -1,5 +1,10 @@
 import click
 from cvsdk.mmdet.utils import MMDetModels
+from cvsdk.mmdet.detect import detect as _detect
+from cvsdk.mmdet.eval import evaluate as evaluate
+
+import sys
+sys.path.append("mmdetection")
 
 @click.group()
 def mmdet():
@@ -12,6 +17,57 @@ def mmdet():
 def train(config_file: str, load_from: str | None):
     """Train the MMDet model."""
     MMDetModels.train(config_file=config_file, load_from=load_from)
+
+@mmdet.command()
+@click.option('--config-file', type=str, required=True, help='Name of the model')
+@click.option('--epoch', type=int, default=-1, help='Epoch which detections should be made for')
+@click.option('--work-dir', type=str, required=True, help='Root path of the checkpoint files')
+@click.option('--dataset-dir', type=str, required=True, help='Root path of dataset')
+@click.option('--image-files', type=str, required=True, help='Glob path for images')
+@click.option('--results-file', type=str, default='detections.csv', help='Name of the resulting CSV file')
+@click.option('--batch-size', type=int, default=2, help='Batch size for training (greater than 0, default: 2)')
+@click.option('--score-threshold', type=float, default=0.5, help='Minimum confidence score for bounding box detection')
+@click.option('--device', type=str, default='cuda:0', help='Device to use for detection (default: cuda:0)')
+def detect(config_file, epoch, work_dir, dataset_dir, image_files, results_file, batch_size, score_threshold, device):
+    _detect(
+        config_file=config_file,
+        epoch=epoch,
+        results_file=results_file,
+        work_dir=work_dir,
+        dataset_dir=dataset_dir,
+        image_files=image_files.replace("'", ""),
+        batch_size=batch_size,
+        score_threshold=score_threshold,
+        device=device
+    )
+
+
+@mmdet.command()
+@click.option('--model_type', type=str, required=True, help='Type of model to use for detection')
+@click.option('--model_name', type=str, required=True, help='Name of the model')
+@click.option('--annotations', type=click.Path(exists=True, file_okay=True, dir_okay=False), required=True, help='Path to the annotations')
+@click.option('--epochs', type=int, required=True, help='Number of training epochs (greater than 0)')
+@click.option('--csv_file_pattern', type=str, required=True, help='Pattern for the CSV files ($i will be replaced by epoch number)')
+@click.option('--results_file', type=str, required=True, help='Name of the resulting CSV file')
+@click.option('--score-threshold', type=float, default=0.5, help='Minimum confidence score for bounding box detection')
+def eval(
+    model_type: str,
+    model_name: str,
+    annotations: str,
+    epochs: int,
+    csv_file_pattern: str,
+    results_file: str,
+    score_threshold: float,
+):
+    evaluate(
+        gt_file_path=annotations,
+        model_type=model_type,
+        model_name=model_name,
+        csv_file_pattern=csv_file_pattern,
+        results_file=results_file,
+        max_epochs=epochs,
+        score_threshold=score_threshold,
+    )
 
 
 @mmdet.command()

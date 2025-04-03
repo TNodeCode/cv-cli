@@ -28,6 +28,7 @@ dependencies = [
     "grad-cam>=1.5.4",
     "matplotlib<=3.10",
     "onnxruntime==1.19",
+    "globox>=2.5.0",
 ]
 
 [dependency-groups]

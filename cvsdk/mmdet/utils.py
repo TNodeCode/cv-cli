@@ -138,8 +138,12 @@ class MMDetModels:
       cfg.model.roi_head.bbox_head[0].num_classes=NUM_CLASSES
       cfg.model.roi_head.bbox_head[1].num_classes=NUM_CLASSES
       cfg.model.roi_head.bbox_head[2].num_classes=NUM_CLASSES
-    elif MODEL_TYPE == "deformable_detr":
+    elif MODEL_TYPE in ["deformable_detr", "dino"]:
       cfg.model.bbox_head.num_classes=NUM_CLASSES
+    elif MODEL_TYPE in ["codino"]:
+      cfg.model.bbox_head[0].num_classes=NUM_CLASSES
+      cfg.model.query_head.num_classes=NUM_CLASSES
+      cfg.model.roi_head[0].bbox_head.num_classes=NUM_CLASSES
     elif MODEL_TYPE == "yolox":
       cfg.model.bbox_head.num_classes=NUM_CLASSES
     cfg.train_dataloader.batch_size=BATCH_SIZE

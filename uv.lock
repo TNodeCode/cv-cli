@@ -418,6 +418,7 @@ dependencies = [
     { name = "cvat-sdk" },
     { name = "dynaconf" },
     { name = "fiftyone" },
+    { name = "globox" },
     { name = "grad-cam" },
     { name = "matplotlib" },
     { name = "mkdocs" },
@@ -453,6 +454,7 @@ requires-dist = [
     { name = "cvat-sdk", specifier = ">=2.31.0" },
     { name = "dynaconf", specifier = ">=3.2.10" },
     { name = "fiftyone", specifier = ">=1.3.1" },
+    { name = "globox", specifier = ">=2.5.0" },
     { name = "grad-cam", specifier = ">=1.5.4" },
     { name = "matplotlib", specifier = "<=3.10" },
     { name = "mkdocs", specifier = ">=1.6.1" },
@@ -753,6 +755,20 @@ name = "glob2"
 version = "0.7"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d7/a5/bbbc3b74a94fbdbd7915e7ad030f16539bfdc1362f7e9003b594f0537950/glob2-0.7.tar.gz", hash = "sha256:85c3dbd07c8aa26d63d7aacee34fa86e9a91a3873bc30bf62ec46e531f92ab8c", size = 10697 }
+
+[[package]]
+name = "globox"
+version = "2.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "rich" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/af/2d823340e7f87e8d73a7b1cd662ace8fae4869ab8e9f159d7662daba4f07/globox-2.5.0.tar.gz", hash = "sha256:54ed5fce64ecf6a526730e8280ea3448c41bb8ba0360e829d9ee9caf7e4819b3", size = 30880 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/07/ea6cc2acfa5402b33cabc10fb9d0ec1bcd50217b5b7dc7dd585b0cf26e4b/globox-2.5.0-py3-none-any.whl", hash = "sha256:49eccad1c1f096df87def0522cdaee0a88502eab69d5b41eb906a50da73a1faa", size = 34710 },
+]
 
 [[package]]
 name = "grad-cam"
