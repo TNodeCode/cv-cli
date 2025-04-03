@@ -29,6 +29,7 @@ dependencies = [
     "matplotlib<=3.10",
     "onnxruntime==1.19",
     "globox>=2.5.0",
+    "tensorboard>=2.19.0",
 ]
 
 [dependency-groups]

@@ -7,19 +7,16 @@ import pandas as pd
 
 
 @click.group()
-def fiftyone():
+def fiftyone() -> None:
     """CLI for training and managing a YOLO model on a custom dataset."""
-    pass
 
 
 @fiftyone.command()
 @click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-def show(root_dir, annotations, images):
-    """
-    Starts a FiftyOne application to inspect a computer vision object detection dataset.
-    """
+def show(root_dir: str, annotations: str, images: str) -> None:
+    """Starts a FiftyOne application to inspect a computer vision object detection dataset."""
     # Load the COCO dataset into FiftyOne
     dataset = fo.Dataset.from_dir(
         dataset_type=fo.types.COCODetectionDataset,
@@ -31,7 +28,7 @@ def show(root_dir, annotations, images):
     session = fo.launch_app(dataset)
 
     print("FiftyOne app is running. Press CTRL-C to stop.")
-    
+
     try:
         # Keep the script running until CTRL-C is pressed
         session.wait()
@@ -48,11 +45,8 @@ def show(root_dir, annotations, images):
               help='Directory where images are stored relative to root-dir')
 @click.option('--output', type=str, required=True,
               help='Path to save the new COCO JSON annotation file')
-def annotate(root_dir, annotations, images, output):
-    """
-    Loads a COCO dataset, sends it to CVAT for annotation, merges the new annotations,
-    and exports them as a new COCO JSON file.
-    """
+def annotate(root_dir: str, annotations: str, images: str, output: str) -> None:
+    """Loads a COCO dataset, sends it to CVAT for annotation, merges the new annotations, and exports them as a new COCO JSON file."""
     #os.environ["FIFTYONE_CVAT_USERNAME"] = "john.doe"
     #os.environ["FIFTYONE_CVAT_PASSWORD"] = "Test_1234"
 
@@ -64,7 +58,7 @@ def annotate(root_dir, annotations, images, output):
     )
 
     print(f"Loaded dataset '{dataset.name}' with {len(dataset)} samples.")
-    
+
     # (Optional) Launch the FiftyOne App to inspect your dataset
     session = fo.launch_app(dataset)
     print("FiftyOne app is running. You can inspect your dataset now.")
@@ -80,7 +74,7 @@ def annotate(root_dir, annotations, images, output):
     print("LABEL FIELDS: ", label_fields)
     print("LABEL FIELD: ", label_field)
 
-    
+
     # This call uploads the samples (and existing labels, if any) to CVAT.
     # The 'launch_editor=True' flag will automatically open the CVAT editor.
     dataset.annotate(
@@ -132,11 +126,9 @@ def annotate(root_dir, annotations, images, output):
 @click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-@click.option('--detections', type=str, required=True, help='CSV file containing model detections')
-def detections(root_dir, annotations, images, detections):
-    """
-    Starts a FiftyOne application to inspect a computer vision object detection dataset.
-    """
+@click.option('--detections-file', type=str, required=True, help='CSV file containing model detections')
+def detections(root_dir: str, annotations: str, images: str, detections_file: str) -> None:
+    """Starts a FiftyOne application to inspect a computer vision object detection dataset."""
     # Load the COCO dataset into FiftyOne
     dataset = fo.Dataset.from_dir(
         dataset_type=fo.types.COCODetectionDataset,
@@ -145,7 +137,7 @@ def detections(root_dir, annotations, images, detections):
     )
 
     # Parse the detections CSV
-    detections_path = os.path.join(root_dir, detections)
+    detections_path = os.path.join(root_dir, detections_file)
     detections_df = pd.read_csv(detections_path)
 
     # Group detections by image filename
@@ -155,7 +147,7 @@ def detections(root_dir, annotations, images, detections):
     for sample in dataset:
         filename = os.path.basename(sample.filepath)
         if filename in grouped_detections.groups:
-            detections = []
+            model_detections = []
             for _, row in grouped_detections.get_group(filename).iterrows():
                 # Assuming the CSV contains 'label', 'xmin', 'ymin', 'xmax', 'ymax', and 'confidence' columns
                 label = row['label']
@@ -167,7 +159,7 @@ def detections(root_dir, annotations, images, detections):
                     (row['xmax'] - row['xmin']) / sample.metadata.width,
                     (row['ymax'] - row['ymin']) / sample.metadata.height,
                 ]
-                detections.append(
+                model_detections.append(
                     fo.Detection(
                         label=label,
                         bounding_box=bounding_box,
@@ -175,7 +167,7 @@ def detections(root_dir, annotations, images, detections):
                     )
                 )
             # Add detections to the sample
-            sample['detections'] = fo.Detections(detections=detections)
+            sample['detections'] = fo.Detections(detections=model_detections)
             sample.save()
 
     # Launch FiftyOne app
@@ -194,7 +186,14 @@ def detections(root_dir, annotations, images, detections):
 @click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-def embeddings(root_dir, annotations, images):
+def embeddings(root_dir: str, annotations: str, images: str) -> None:
+    """Visualize embeddings.
+
+    Args:
+        root_dir (str): Dataset root dir
+        annotations (str): Path to annotations relative to root_dir
+        images (str): Path to images relative to root_dir
+    """
     # Step 1: Load the COCO dataset into FiftyOne
     dataset = fo.Dataset.from_dir(
         dataset_type=fo.types.COCODetectionDataset,
@@ -215,7 +214,7 @@ def embeddings(root_dir, annotations, images):
         sample.save()
 
     # Step 4: Visualize embeddings
-    results = fob.compute_visualization(
+    _ = fob.compute_visualization(
         dataset,
         embeddings=embeddings,
         method="umap",  # or "tsne", "pca" TODO add pacmap and create CLI parameter for this
@@ -227,7 +226,7 @@ def embeddings(root_dir, annotations, images):
     session = fo.launch_app(dataset)
 
     print("FiftyOne app is running. Press CTRL-C to stop.")
-    
+
     try:
         # Keep the script running until CTRL-C is pressed
         session.wait()
