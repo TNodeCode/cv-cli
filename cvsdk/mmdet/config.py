@@ -17,6 +17,9 @@ class EfficientNetBackboneConfig(BaseModel):
     out_indices: list[int]
     out_channels: list[int]
 
+class MyBackboneConfig(BaseModel):
+    type: Literal["MyBackbone"]
+
 
 class TrainingConfig(BaseModel):
     """Model configuration
@@ -24,7 +27,7 @@ class TrainingConfig(BaseModel):
     config_path: str
     model_type: str
     model_name: str
-    backbone: ResNetBackboneConfig | EfficientNetBackboneConfig | None
+    backbone: ResNetBackboneConfig | EfficientNetBackboneConfig | MyBackboneConfig | None
     dataset_dir: str
     train_dir: str
     val_dir: str

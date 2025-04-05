@@ -8,9 +8,9 @@ from cvsdk.mmdet.config import TrainingConfig
 from collections import OrderedDict
 from rich.pretty import pprint
 from structlog import get_logger
+from cvsdk.mmdet.backbones import *
 
 logger = get_logger()
-
 
 
 class MMDetModels:
@@ -125,7 +125,7 @@ class MMDetModels:
     cfg.train_cfg.max_epochs=EPOCHS
     cfg.default_hooks.logger.interval=10
 
-    if cfg.model.backbone.type == "ResNet" and config.backbone:
+    if cfg.model.backbone.type == "ResNet" and config.backbone.type == "ResNet":
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.frozen_stages = config.backbone.frozen_stages
       cfg.model.backbone.depth = config.backbone.depth
