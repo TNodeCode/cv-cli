@@ -2,6 +2,9 @@ import click
 from cvsdk.mmdet.utils import MMDetModels
 from cvsdk.mmdet.detect import detect as _detect
 from cvsdk.mmdet.eval import evaluate as evaluate
+from cvsdk.mmdet.board import log_metrics_to_tensorboard, parse_json_log_file
+import subprocess
+import signal
 
 import os
 import sys
@@ -95,3 +98,27 @@ def copy_backbone(source_config_file: str, target_config_file: str, output_file:
         load_source_from=load_source_from,
         output_file=output_file
     )
+
+
+@mmdet.command()
+@click.argument("json_log_path", type=click.Path(exists=True))
+@click.option("--log-dir", type=str, default="./runs", help="Directory to store TensorBoard logs")
+@click.option("--port", type=int, default=6006, help="Port to run TensorBoard on")
+def board(json_log_path, log_dir, port):
+    """Parse a training JSON log file and start TensorBoard until Ctrl+C."""
+    click.echo(f"Processing log file: {json_log_path}")
+    batch_df, eval_df = parse_json_log_file(json_log_path)
+
+    click.echo(f"Logging metrics to TensorBoard at: {log_dir}")
+    log_metrics_to_tensorboard(batch_df, eval_df, log_dir=log_dir)
+
+    try:
+        click.echo(f"Starting TensorBoard at http://localhost:{port} (Press Ctrl+C to stop)")
+        process = subprocess.Popen(["tensorboard", "--logdir", log_dir, "--port", str(port)])
+
+        # Wait for Ctrl+C
+        process.wait()
+    except KeyboardInterrupt:
+        click.echo("\nStopping TensorBoard...")
+        process.send_signal(signal.SIGINT)
+        process.wait()
