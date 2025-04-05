@@ -1,12 +1,24 @@
 from pydantic import BaseModel
 from typing import Literal
 
-class BackboneConfig(BaseModel):
+class ResNetBackboneConfig(BaseModel):
+    type: Literal["EfficientNetV2"]
     checkpoint: str
     depth: Literal[18,34,50,101,152]
     frozen_stages: Literal[0,1,2,3,4]
     out_indices: list[int]
     out_channels: list[int]
+
+
+class EfficientNetBackboneConfig(BaseModel):
+    type: Literal["EfficientNetV2"]
+    checkpoint: str
+    arch: Literal["s","m","l","xl"]
+    out_indices: list[int]
+    out_channels: list[int]
+
+class MyBackboneConfig(BaseModel):
+    type: Literal["MyBackbone"]
 
 
 class TrainingConfig(BaseModel):
@@ -15,7 +27,7 @@ class TrainingConfig(BaseModel):
     config_path: str
     model_type: str
     model_name: str
-    backbone: BackboneConfig | None
+    backbone: ResNetBackboneConfig | EfficientNetBackboneConfig | MyBackboneConfig | None
     dataset_dir: str
     train_dir: str
     val_dir: str
