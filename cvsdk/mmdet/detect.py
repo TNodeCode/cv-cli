@@ -20,12 +20,22 @@ def detect(
         score_threshold: float = 0.5,
         device: str = "cuda:0",
         work_dir: str = "./work_dirs"
-):
+) -> None:
+    """Perform object detection on images.
+
+    Args:
+        config_file (str): Path to an MMDet configuration file
+        epoch (int): Number of epochs to perform detection on
+        results_file (str): Path where the results should be stored
+        dataset_dir (str): Path where the dataset is stored
+        image_files (str): Glob expression for image paths in dataset directory
+        batch_size (int, optional): Btach size for inference. Defaults to 8.
+        score_threshold (float, optional): Score threshold for bounding boxes. Defaults to 0.5.
+        device (str, optional): Device to use for inference. Defaults to "cuda:0".
+        work_dir (str, optional): Path where checkpoints are stored. Defaults to "./work_dirs".
+    """
     config_file_path = f"{work_dir}/{config_file}"
-    if epoch > 0:
-        epochs = [epoch]
-    else:
-        epochs = range(1, len(glob.glob(f"{work_dir}/epoch_*.pth"))+1)
+    epochs = list(range(1, len(glob.glob(f"{work_dir}/epoch_*.pth"))+1)) if epoch > 0 else [epoch]
 
     logger.info(
         "Configuration",
@@ -100,6 +110,6 @@ def detect(
     logger.info("Saved CSV file at", csv_filename=csv_filename)
 
     # Print some statistics about the detection process
-    durations = np.array(durations)
-    logger.info(f"Inference took {durations.mean()}, per batch on average, std={durations.std()}")
-    logger.info(f"Inference took {durations.mean() / batch_size} per image on average, std={durations.std() / batch_size}")
+    durations_arr = np.array(durations)
+    logger.info(f"Inference took {durations_arr.mean()}, per batch on average, std={durations_arr.std()}")
+    logger.info(f"Inference took {durations_arr.mean() / batch_size} per image on average, std={durations_arr.std() / batch_size}")

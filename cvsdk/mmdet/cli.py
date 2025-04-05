@@ -1,18 +1,19 @@
+import signal
+import subprocess
+import sys
+
 import click
-from cvsdk.mmdet.utils import MMDetModels
+
+from cvsdk.mmdet.board import log_metrics_to_tensorboard, parse_json_log_file
 from cvsdk.mmdet.detect import detect as _detect
 from cvsdk.mmdet.eval import evaluate as evaluate
-from cvsdk.mmdet.board import log_metrics_to_tensorboard, parse_json_log_file
-import subprocess
-import signal
+from cvsdk.mmdet.utils import MMDetModels
 
-import sys
 sys.path.append("mmdetection")
 
 @click.group()
 def mmdet():
     """CLI for training and managing a MMDet model on a custom dataset."""
-    pass
 
 @mmdet.command()
 @click.argument("config-file", type=click.Path(exists=True, file_okay=True, dir_okay=False))
