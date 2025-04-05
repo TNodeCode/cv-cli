@@ -3,8 +3,9 @@ from cvsdk.mmdet.utils import MMDetModels
 from cvsdk.mmdet.detect import detect as _detect
 from cvsdk.mmdet.eval import evaluate as evaluate
 
+import os
 import sys
-sys.path.append("mmdetection")
+sys.path.append(os.path.join(os.getcwd(), "mmdetection"))
 
 @click.group()
 def mmdet():

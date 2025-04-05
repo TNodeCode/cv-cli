@@ -1,18 +1,19 @@
 version: "3"
 
 tasks:
-  download-mmdet:
+  download-mmd:
     desc: Download the mmdetection repository
     cmds:
+      - git clone https://github.com/open-mmlab/mmpretrain
       - git clone https://github.com/open-mmlab/mmdetection.git
+      - git clone https://github.com/open-mmlab/mmsegmentation
     dir: .
   
-  install-mmdet:
+  install-mm:
     desc: Install the mmdetection library
     cmds:
-      - mim install -U mmengine
-      - mim install -U mmcv==2.1
-      - mim install -U mmdet
+      - mim uninstall -y mmengine mmcv mmpretrain mmdet mmsegmentation
+      - mim install -U mmengine mmcv==2.1 mmpretrain mmdet mmsegmentation
     dir: .
 
   run-tests:

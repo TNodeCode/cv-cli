@@ -125,10 +125,15 @@ class MMDetModels:
     cfg.train_cfg.max_epochs=EPOCHS
     cfg.default_hooks.logger.interval=10
 
-    if config.backbone:
+    if cfg.model.backbone.type == "ResNet" and config.backbone:
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.frozen_stages = config.backbone.frozen_stages
       cfg.model.backbone.depth = config.backbone.depth
+      cfg.model.backbone.out_indices = config.backbone.out_indices
+      cfg.model.neck.in_channels = config.backbone.out_channels
+    elif cfg.model.backbone.type == "mmpretrain.EfficientNetV2" and config.backbone:
+      cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
+      cfg.model.backbone.arch = config.backbone.arch
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
 
