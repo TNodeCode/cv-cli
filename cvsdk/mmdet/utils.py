@@ -9,6 +9,8 @@ from collections import OrderedDict
 from rich.pretty import pprint
 from structlog import get_logger
 from cvsdk.mmdet.backbones import *
+from cvsdk.mmdet.necks import *
+from cvsdk.mmdet.vitdet.vitdet import *
 
 logger = get_logger()
 
@@ -137,13 +139,13 @@ class MMDetModels:
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
 
-    if MODEL_TYPE == "faster_rcnn":
-      cfg.model.roi_head.bbox_head.num_classes=NUM_CLASSES
-    elif MODEL_TYPE == "cascade_rcnn":
-      cfg.model.roi_head.bbox_head[0].num_classes=NUM_CLASSES
-      cfg.model.roi_head.bbox_head[1].num_classes=NUM_CLASSES
-      cfg.model.roi_head.bbox_head[2].num_classes=NUM_CLASSES
-    elif MODEL_TYPE in ["deformable_detr", "dino"]:
+    if MODEL_TYPE in ["faster_rcnn", "cascade_rcnn"]:
+      if type(cfg.model.roi_head) is list:
+        for bbox_head in cfg.model.roi_head:
+          bbox_head.num_classes=NUM_CLASSES
+      else:
+        cfg.model.roi_head.bbox_head.num_classes=NUM_CLASSES
+    if MODEL_TYPE in ["deformable_detr", "dino"]:
       cfg.model.bbox_head.num_classes=NUM_CLASSES
     elif MODEL_TYPE in ["codino"]:
       cfg.model.bbox_head[0].num_classes=NUM_CLASSES
@@ -151,6 +153,7 @@ class MMDetModels:
       cfg.model.roi_head[0].bbox_head.num_classes=NUM_CLASSES
     elif MODEL_TYPE == "yolox":
       cfg.model.bbox_head.num_classes=NUM_CLASSES
+
     cfg.train_dataloader.batch_size=BATCH_SIZE
     cfg.val_dataloader.batch_size=BATCH_SIZE
     cfg.test_dataloader.batch_size=BATCH_SIZE

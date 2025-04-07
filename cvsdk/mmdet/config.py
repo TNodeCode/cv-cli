@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Literal
 
 class ResNetBackboneConfig(BaseModel):
-    type: Literal["EfficientNetV2"]
+    type: Literal["ResNet"]
     checkpoint: str
     depth: Literal[18,34,50,101,152]
     frozen_stages: Literal[0,1,2,3,4]
