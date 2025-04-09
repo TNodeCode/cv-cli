@@ -154,7 +154,7 @@ class DinoViTBackbone(torch.nn.Module):
         cfg = Config.fromfile(config_file)
         model: nn.Module = load_detector(cfg)
         self.model: nn.Module = model.backbone
-        self.reduce = nn.Conv2d(in_channels=768,out_channels=1,kernel_size=1,stride=1,padding=0)
+        #self.reduce = nn.Conv2d(in_channels=768,out_channels=1,kernel_size=1,stride=1,padding=0)
         del model
 
         total_params = sum(p.numel() for p in self.parameters())
@@ -176,7 +176,9 @@ class DinoViTBackbone(torch.nn.Module):
         # we are only interested in the last layer
         x = [_x.unsqueeze(0) for _x in x]
         x = torch.concat(x, dim=0)
-        x = self.reduce(x)
+        B,C,H,W = x.shape
+        x = x.permute(0,2,3,1)
+        x = x.reshape(B*H*W,C)
         return torch.flatten(x, start_dim=1)
 
 
