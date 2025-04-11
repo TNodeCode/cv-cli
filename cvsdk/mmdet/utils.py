@@ -127,17 +127,26 @@ class MMDetModels:
     cfg.train_cfg.max_epochs=EPOCHS
     cfg.default_hooks.logger.interval=10
 
-    if cfg.model.backbone.type == "ResNet" and config.backbone.type == "ResNet":
+    if cfg.model.backbone and cfg.model.backbone.type == "ResNet" and config.backbone.type == "ResNet":
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.frozen_stages = config.backbone.frozen_stages
       cfg.model.backbone.depth = config.backbone.depth
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
-    elif cfg.model.backbone.type == "mmpretrain.EfficientNetV2" and config.backbone:
+    elif cfg.model.backbone and cfg.model.backbone.type == "mmpretrain.EfficientNetV2":
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.arch = config.backbone.arch
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
+    elif cfg.model.backbone and cfg.model.backbone.type == "SwinTransformer":
+      cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
+      cfg.model.backbone.pretrain_img_size = config.backbone.pretrain_img_size
+      cfg.model.backbone.attn_drop_rate = config.backbone.attn_drop_rate
+      cfg.model.backbone.embed_dims = config.backbone.embed_dims
+      cfg.model.backbone.drop_path_rate = config.backbone.drop_path_rate
+      cfg.model.backbone.drop_rate = config.backbone.drop_rate
+      cfg.model.backbone.num_heads = config.backbone.num_heads
+      cfg.model.backbone.out_indices = config.backbone.out_indices
 
     if MODEL_TYPE in ["faster_rcnn", "cascade_rcnn"]:
       if type(cfg.model.roi_head) is list:
@@ -151,6 +160,13 @@ class MMDetModels:
       cfg.model.bbox_head[0].num_classes=NUM_CLASSES
       cfg.model.query_head.num_classes=NUM_CLASSES
       cfg.model.roi_head[0].bbox_head.num_classes=NUM_CLASSES
+      cfg.model.query_head.transformer.encoder.num_layers=config.detr_encoder.num_layers
+      cfg.model.query_head.transformer.encoder.transformerlayers.attn_cfgs.dropout=config.detr_encoder.attn_dropout
+      cfg.model.query_head.transformer.encoder.transformerlayers.ffn_dropout=config.detr_encoder.ffn_dropout
+      cfg.model.query_head.transformer.decoder.num_layers=config.detr_decoder.num_layers
+      cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[0].dropout=config.detr_decoder.attn_dropout
+      cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[1].dropout=config.detr_decoder.attn_dropout
+      cfg.model.query_head.transformer.decoder.transformerlayers.ffn_dropout=config.detr_decoder.ffn_dropout
     elif MODEL_TYPE == "yolox":
       cfg.model.bbox_head.num_classes=NUM_CLASSES
 
