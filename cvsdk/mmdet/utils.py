@@ -150,7 +150,7 @@ class MMDetModels:
       cfg.model.backbone.drop_path_rate = config.backbone.drop_path_rate
       cfg.model.backbone.drop_rate = config.backbone.drop_rate
       cfg.model.backbone.num_heads = config.backbone.num_heads
-      cfg.model.backbone.out_indices = config.backbone.num_heads
+      cfg.model.backbone.out_indices = config.backbone.out_indices
 
 
     if MODEL_TYPE in ["faster_rcnn", "cascade_rcnn"]:
