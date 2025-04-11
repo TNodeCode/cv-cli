@@ -142,6 +142,7 @@ class MMDetModels:
       cfg.model.backbone.arch = config.backbone.arch
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
+    """
     elif cfg.model.backbone and cfg.model.backbone.type == "SwinTransformer":
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.pretrain_img_size = config.backbone.pretrain_img_size
@@ -151,6 +152,7 @@ class MMDetModels:
       cfg.model.backbone.drop_rate = config.backbone.drop_rate
       cfg.model.backbone.num_heads = config.backbone.num_heads
       cfg.model.backbone.out_indices = config.backbone.out_indices
+    """
 
 
     if MODEL_TYPE in ["faster_rcnn", "cascade_rcnn"]:
@@ -164,6 +166,7 @@ class MMDetModels:
     elif MODEL_TYPE in ["codino"]:
       cfg.model.bbox_head[0].num_classes=NUM_CLASSES
       cfg.model.query_head.num_classes=NUM_CLASSES
+      """
       cfg.model.query_head.transformer.encoder.num_layers=config.detr_encoder.num_layers
       cfg.model.query_head.transformer.encoder.transformerlayers.attn_cfgs.dropout=config.detr_encoder.attn_dropout
       cfg.model.query_head.transformer.encoder.transformerlayers.ffn_dropout=config.detr_encoder.ffn_dropout
@@ -171,6 +174,7 @@ class MMDetModels:
       cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[0].dropout=config.detr_decoder.attn_dropout
       cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[1].dropout=config.detr_decoder.attn_dropout
       cfg.model.query_head.transformer.decoder.transformerlayers.ffn_dropout=config.detr_decoder.ffn_dropout
+      """
     elif MODEL_TYPE == "retinanet":
       cfg.model.roi_head[0].bbox_head.num_classes=NUM_CLASSES
     elif MODEL_TYPE == "yolox":
