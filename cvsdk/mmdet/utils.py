@@ -104,26 +104,26 @@ class MMDetModels:
 
     if MODEL_TYPE == "yolox":
       # YoloX uses MultiImageMixDataset, has to be configured differently
-      cfg.train_dataloader.num_workers=0
+      cfg.train_dataloader.num_workers=2
       cfg.train_dataloader.dataset.dataset.data_root=DATASET_DIR
       cfg.train_dataloader.dataset.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
       cfg.train_dataloader.dataset.dataset.pipeline = train_pipeline
     else:
-      cfg.train_dataloader.num_workers=0
+      cfg.train_dataloader.num_workers=2
       cfg.train_dataloader.dataset.data_root=DATASET_DIR
       cfg.train_dataloader.dataset.ann_file=f"{ANN_TRAIN}"
       cfg.train_dataloader.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
       cfg.train_dataloader.dataset.pipeline = train_pipeline
-    cfg.val_dataloader.num_workers=0
+    cfg.val_dataloader.num_workers=2
     cfg.val_dataloader.dataset.data_root=DATASET_DIR
     cfg.val_dataloader.dataset.data_prefix.img=f"{config.val_dir}/"
     cfg.val_dataloader.dataset.ann_file=f"{ANN_VAL}"
     cfg.val_evaluator.ann_file=f"{DATASET_DIR}{ANN_VAL}"
     cfg.val_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
-    cfg.test_dataloader.num_workers=0
+    cfg.test_dataloader.num_workers=2
     cfg.test_dataloader.dataset.data_root=DATASET_DIR
     cfg.test_dataloader.dataset.data_prefix.img=f"{config.test_dir}/"
     cfg.test_dataloader.dataset.ann_file=f"{ANN_TEST}"
