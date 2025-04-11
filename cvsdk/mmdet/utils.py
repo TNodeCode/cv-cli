@@ -144,13 +144,13 @@ class MMDetModels:
       cfg.model.neck.in_channels = config.backbone.out_channels
     elif cfg.model.backbone.type == "SwinTransformer":
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
-      cfg.model.backbone.pretrain_img_size = 512
-      cfg.model.backbone.attn_drop_rate = 0.1
-      cfg.model.backbone.embed_dims = 192
-      cfg.model.backbone.drop_path_rate = 0.3
-      cfg.model.backbone.drop_rate = 0.1
-      cfg.model.backbone.num_heads = [6, 12, 24, 48]
-      cfg.model.backbone.out_indices = [0, 1, 2, 3]
+      cfg.model.backbone.pretrain_img_size = config.backbone.pretrain_img_size
+      cfg.model.backbone.attn_drop_rate = config.backbone.attn_drop_rate
+      cfg.model.backbone.embed_dims = config.backbone.embed_dims
+      cfg.model.backbone.drop_path_rate = config.backbone.drop_path_rate
+      cfg.model.backbone.drop_rate = config.backbone.drop_rate
+      cfg.model.backbone.num_heads = config.backbone.num_heads
+      cfg.model.backbone.out_indices = config.backbone.num_heads
 
 
     if MODEL_TYPE in ["faster_rcnn", "cascade_rcnn"]:
