@@ -55,20 +55,6 @@ class MyBackboneConfig(BaseModel):
     type: Literal["MyBackbone"]
 
 
-class DetrTransformerEncoderConfig(BaseModel):
-    type: Literal["DetrTransformerEncoder"] = "DetrTransformerEncoder"
-    num_layers: int = 6
-    attn_dropout: float = 0.1
-    ffn_dropout: float = 0.1
-
-
-class DetrTransformerDecoderConfig(BaseModel):
-    type: Literal["DetrTransformerDecoder"] = "DetrTransformerDecoder"
-    num_layers: int = 6
-    attn_dropout: float = 0.1
-    ffn_dropout: float = 0.1
-
-
 class TrainingConfig(BaseModel):
     """Model configuration
     """

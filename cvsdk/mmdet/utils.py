@@ -59,7 +59,6 @@ class MMDetModels:
     DATASET_CLASSES=config.dataset_classes
 
     MODEL_TYPE=config.model_type
-    MODEL_NAME=config.model_name
     BATCH_SIZE=config.batch_size
     NUM_CLASSES=len(config.dataset_classes)
     EPOCHS=config.epochs
@@ -101,6 +100,23 @@ class MMDetModels:
     train_pipeline += [
       dict(type='PackDetInputs')
     ]
+    
+    val_pipeline = [
+      dict(type='LoadImageFromFile', backend_args=None),
+      dict(type='Resize', keep_ratio=False, scale=(512,512)),
+      dict(type='LoadAnnotations', with_bbox=True),
+      dict(
+        meta_keys=(
+          'img_id',
+          'img_path',
+          'ori_shape',
+          'img_shape',
+          'scale_factor',
+        ),
+        type='PackDetInputs'
+      ),
+    ]
+
 
     if MODEL_TYPE == "yolox":
       # YoloX uses MultiImageMixDataset, has to be configured differently
@@ -117,6 +133,7 @@ class MMDetModels:
       cfg.train_dataloader.dataset.data_prefix.img=f"{config.train_dir}/"
       cfg.train_dataloader.dataset.update({'metainfo': {'classes': DATASET_CLASSES}})
       cfg.train_dataloader.dataset.pipeline = train_pipeline
+      cfg.val_dataloader.dataset.pipeline = val_pipeline
     cfg.val_dataloader.num_workers=2
     cfg.val_dataloader.dataset.data_root=DATASET_DIR
     cfg.val_dataloader.dataset.data_prefix.img=f"{config.val_dir}/"
@@ -177,16 +194,6 @@ class MMDetModels:
       cfg.model.bbox_head[0].feat_channels=config.detr_encoder.embed_dims
       cfg.model.neck.out_channels=config.detr_encoder.embed_dims
       cfg.model.query_head.num_classes=NUM_CLASSES
-      """
-      cfg.model.query_head.transformer.encoder.num_layers=config.detr_encoder.num_layers
-      cfg.model.query_head.transformer.encoder.transformerlayers.attn_cfgs.dropout=config.detr_encoder.attn_dropout
-      cfg.model.query_head.transformer.encoder.transformerlayers.ffn_dropout=config.detr_encoder.ffn_dropout
-      cfg.model.query_head.transformer.decoder.num_layers=config.detr_decoder.num_layers
-      cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[0].dropout=config.detr_decoder.attn_dropout
-      cfg.model.query_head.transformer.decoder.transformerlayers.attn_cfgs[1].dropout=config.detr_decoder.attn_dropout
-      cfg.model.query_head.transformer.decoder.transformerlayers.ffn_dropout=config.detr_decoder.ffn_dropout
-      """
-    elif MODEL_TYPE == "retinanet":
       cfg.model.roi_head[0].bbox_head.num_classes=NUM_CLASSES
       cfg.model.roi_head[0].bbox_head.in_channels=config.detr_encoder.embed_dims
       cfg.model.roi_head[0].bbox_roi_extractor.out_channels=config.detr_encoder.embed_dims

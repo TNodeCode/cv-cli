@@ -2,12 +2,7 @@ import torch
 import torch.nn as nn
 from mmdet.registry import MODELS
 from cvsdk.mmdet.vision_lstm.vision_lstm2 import VisionLSTM2
-
-
-IMG_HEIGHT, IMG_WIDTH = 512, 512
-PATCH_SIZE = 16
-N_PATCHES = (IMG_HEIGHT // PATCH_SIZE) * (IMG_WIDTH // PATCH_SIZE)
-EMBED_DIM = 128
+import einops
 
 
 @MODELS.register_module()
@@ -40,9 +35,5 @@ class ViL(nn.Module):
             list[torch.Tensor]: list containing tensor of shape (C, H, W) for each input image
         """
         B, C, H, W = x.shape
-        print("B, C, H, W", B, C, H, W, x.shape)
-        y = self.vil(x) # shape [B, H*W, C]
-        print("Y", y.shape)
-        y_2d = y.reshape((B, H // self.patch_size, W // self.patch_size, self.dim)).permute(0,3,1,2) # shape [B, C, H, W]
-        return y_2d
+        return einops.rearrange(self.vil(x), "b (h w) d -> b d h w", h=H // self.patch_size, w=W // self.patch_size)
 
