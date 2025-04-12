@@ -30,6 +30,27 @@ class SwinTransformerBackboneConfig(BaseModel):
     embed_dims: int = 192
 
 
+class VisionTransformerBackboneConfig(BaseModel):
+    type: Literal["VisionTransformer"] = "VisionTransformer"
+    embed_dims: int = 192
+
+
+class DetrTransformerEncoderConfig(BaseModel):
+    type: Literal["DetrTransformerEncoder"] = "DetrTransformerEncoder"
+    num_layers: int = 6
+    attn_dropout: float = 0.1
+    ffn_dropout: float = 0.1
+    embed_dims: int = 128
+
+
+class DetrTransformerDecoderConfig(BaseModel):
+    type: Literal["DetrTransformerDecoder"] = "DetrTransformerDecoder"
+    num_layers: int = 6
+    attn_dropout: float = 0.1
+    ffn_dropout: float = 0.1
+    embed_dims: int = 128
+
+
 class MyBackboneConfig(BaseModel):
     type: Literal["MyBackbone"]
 
@@ -54,7 +75,7 @@ class TrainingConfig(BaseModel):
     config_path: str
     model_type: str
     model_name: str
-    backbone: ResNetBackboneConfig | EfficientNetBackboneConfig | MyBackboneConfig | SwinTransformerBackboneConfig | None
+    backbone: ResNetBackboneConfig | EfficientNetBackboneConfig | MyBackboneConfig | SwinTransformerBackboneConfig | VisionTransformerBackboneConfig | None
     detr_encoder: DetrTransformerEncoderConfig = DetrTransformerEncoderConfig()
     detr_decoder: DetrTransformerDecoderConfig = DetrTransformerDecoderConfig()
     dataset_dir: str

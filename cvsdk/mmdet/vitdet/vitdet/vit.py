@@ -430,8 +430,9 @@ class ViT(BaseModule):
                                                   f'{self.__class__.__name__} '
             ckpt = CheckpointLoader.load_checkpoint(
                 self.init_cfg.checkpoint, logger=logger, map_location='cpu')
-            if 'model' in ckpt:
-                _state_dict = ckpt['model']
+            if 'state_dict' in ckpt:
+                _state_dict = ckpt['state_dict']
+
             self.load_state_dict(_state_dict, False)
 
     def forward(self, x):
