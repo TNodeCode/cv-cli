@@ -36,6 +36,8 @@ dependencies = [
     "mmsegmentation>=1.2.2",
     "tensorboard>=2.19.0",
     "einops>=0.8.1",
+    "mlstm-kernels>=2.0.0",
+    "xlstm>=2.0.3",
 ]
 
 [dependency-groups]
