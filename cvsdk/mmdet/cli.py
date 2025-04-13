@@ -49,29 +49,20 @@ def detect(config_file, epoch, work_dir, dataset_dir, image_files, results_file,
 
 
 @mmdet.command()
-@click.option('--model_type', type=str, required=True, help='Type of model to use for detection')
-@click.option('--model_name', type=str, required=True, help='Name of the model')
-@click.option('--annotations', type=click.Path(exists=True, file_okay=True, dir_okay=False), required=True, help='Path to the annotations')
-@click.option('--epochs', type=int, required=True, help='Number of training epochs (greater than 0)')
-@click.option('--csv_file_pattern', type=str, required=True, help='Pattern for the CSV files ($i will be replaced by epoch number)')
-@click.option('--results_file', type=str, required=True, help='Name of the resulting CSV file')
+@click.option('--gt', type=click.Path(exists=True, file_okay=True, dir_okay=False), required=True, help='Path to the annotations')
+@click.option('--det', type=str, required=True, help='Path to the detections file')
+@click.option('--out', type=str, required=True, help='Name of the resulting CSV file')
 @click.option('--score-threshold', type=float, default=0.5, help='Minimum confidence score for bounding box detection')
 def eval(
-    model_type: str,
-    model_name: str,
-    annotations: str,
-    epochs: int,
-    csv_file_pattern: str,
-    results_file: str,
+    gt: str,
+    det: str,
+    out: str,
     score_threshold: float,
 ):
     evaluate(
-        gt_file_path=annotations,
-        model_type=model_type,
-        model_name=model_name,
-        csv_file_pattern=csv_file_pattern,
-        results_file=results_file,
-        max_epochs=epochs,
+        gt_file=gt,
+        detections_file=det,
+        results_file=out,
         score_threshold=score_threshold,
     )
 
