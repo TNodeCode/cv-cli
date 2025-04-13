@@ -4,6 +4,11 @@ import numpy as np
 import fiftyone as fo
 import fiftyone.brain as fob
 import pandas as pd
+import torch
+from torchvision.ops import nms as _nms
+from structlog import get_logger
+
+logger = get_logger()
 
 
 @click.group()
@@ -12,16 +17,15 @@ def fiftyone() -> None:
 
 
 @fiftyone.command()
-@click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-def show(root_dir: str, annotations: str, images: str) -> None:
+def show(annotations: str, images: str) -> None:
     """Starts a FiftyOne application to inspect a computer vision object detection dataset."""
     # Load the COCO dataset into FiftyOne
     dataset = fo.Dataset.from_dir(
         dataset_type=fo.types.COCODetectionDataset,
-        data_path=os.path.join(root_dir, images),
-        labels_path=os.path.join(root_dir, annotations),
+        data_path=images,
+        labels_path=annotations,
     )
 
     # Launch FiftyOne app
@@ -123,35 +127,48 @@ def annotate(root_dir: str, annotations: str, images: str, output: str) -> None:
 
 
 @fiftyone.command()
-@click.option('--root-dir', type=click.Path(exists=True), required=True, help='Root directory containing images and annotations')
 @click.option('--annotations', type=str, required=True, help='COCO JSON annotation file')
 @click.option('--images', type=str, required=True, help='Directory where images are stored')
-@click.option('--detections-file', type=str, required=True, help='CSV file containing model detections')
-def detections(root_dir: str, annotations: str, images: str, detections_file: str) -> None:
+@click.option('--det', type=str, required=True, help='CSV file containing model detections')
+@click.option('--nms', type=bool, default=True, help='True if NMS should be performed')
+@click.option('--threshold', type=float, default=0.5, help='Threshold for displaying detections')
+def detections(annotations: str, images: str, det: str, nms: bool, threshold: float) -> None:
     """Starts a FiftyOne application to inspect a computer vision object detection dataset."""
     # Load the COCO dataset into FiftyOne
+    logger.info("Load dataset ...")
     dataset = fo.Dataset.from_dir(
         dataset_type=fo.types.COCODetectionDataset,
-        data_path=os.path.join(root_dir, images),
-        labels_path=os.path.join(root_dir, annotations),
+        data_path=images,
+        labels_path=annotations,
     )
 
     # Parse the detections CSV
-    detections_path = os.path.join(root_dir, detections_file)
+    detections_path = det
     detections_df = pd.read_csv(detections_path)
+    detections_df = detections_df[detections_df['score'] >= threshold]
 
     # Group detections by image filename
     grouped_detections = detections_df.groupby('filename')
 
     # Iterate over samples and add detections
+    logger.info("Add detections ...")
     for sample in dataset:
-        filename = os.path.basename(sample.filepath)
+        filename = os.path.basename(sample.filepath).replace(images, "")
+        filename = sample.filepath.replace(os.path.join(os.getcwd(), images), "")
+        if filename[0] == "/":
+            filename = filename[1:]
         if filename in grouped_detections.groups:
+            df_detections = grouped_detections.get_group(filename)
             model_detections = []
-            for _, row in grouped_detections.get_group(filename).iterrows():
+            detections = df_detections[["xmin", "ymin", "xmax", "ymax", "score"]].to_numpy()
+            if nms:
+                idx_kept = _nms(boxes=torch.tensor(detections[:, 0:4]), scores=torch.tensor(detections[:, 4]), iou_threshold=0.5)
+            else:
+                idx_kept = np.arange(len(detections))
+            for i, row in df_detections.iloc[idx_kept].iterrows():
                 # Assuming the CSV contains 'label', 'xmin', 'ymin', 'xmax', 'ymax', and 'confidence' columns
-                label = row['label']
-                confidence = row['confidence']
+                label = row['class_name']
+                confidence = row['score']
                 # Convert absolute coordinates to relative [0, 1] bounding box
                 bounding_box = [
                     row['xmin'] / sample.metadata.width,
@@ -173,13 +190,13 @@ def detections(root_dir: str, annotations: str, images: str, detections_file: st
     # Launch FiftyOne app
     session = fo.launch_app(dataset)
 
-    print("FiftyOne app is running. Press CTRL-C to stop.")
-    
+    logger.info("FiftyOne app is running. Press CTRL-C to stop.")
+
     try:
         # Keep the script running until CTRL-C is pressed
         session.wait()
     except KeyboardInterrupt:
-        print("\nSession terminated by user.")
+        logger.info("Session terminated by user.")
 
 
 @fiftyone.command()
