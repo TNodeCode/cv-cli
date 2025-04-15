@@ -26,7 +26,7 @@ class ViL(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
-        """Forward image through ViL backbone.
+        """Forward image through backbone.
 
         Args:
             x (torch.Tensor): Input image tensor
