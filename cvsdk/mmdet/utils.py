@@ -154,12 +154,12 @@ class MMDetModels:
       cfg.model.backbone.depth = config.backbone.depth
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
-    elif cfg.model.backbone and cfg.model.backbone.type == "mmpretrain.EfficientNetV2":
+    elif cfg.model.backbone and cfg.model.backbone.type == "mmpretrain.EfficientNetV2" and config.backbone:
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.arch = config.backbone.arch
       cfg.model.backbone.out_indices = config.backbone.out_indices
       cfg.model.neck.in_channels = config.backbone.out_channels
-    elif cfg.model.backbone and cfg.model.backbone.type == "SwinTransformer":
+    elif cfg.model.backbone and cfg.model.backbone.type == "SwinTransformer" and config.backbone:
       cfg.model.backbone.init_cfg.checkpoint = config.backbone.checkpoint
       cfg.model.backbone.pretrain_img_size = config.backbone.pretrain_img_size
       cfg.model.backbone.attn_drop_rate = config.backbone.attn_drop_rate
