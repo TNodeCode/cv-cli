@@ -88,6 +88,11 @@ class MMDetModels:
         'weight_decay': config.weight_decay,
       }
 
+    cfg.default_hooks.checkpoint.by_epoch = True
+    cfg.default_hooks.checkpoint.interval = 1
+    cfg.default_hooks.checkpoint.max_keep_ckpts = 10_000
+    
+
     # Here we can define image augmentations used for training.
     # see: https://mmdetection.readthedocs.io/en/v2.19.1/tutorials/data_pipeline.html
     train_pipeline = [

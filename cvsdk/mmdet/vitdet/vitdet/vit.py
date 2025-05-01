@@ -260,6 +260,7 @@ class Block(nn.Module):
         mlp_ratio=4.0,
         qkv_bias=True,
         drop_path=0.0,
+        dropout=0.1,
         norm_cfg=dict(type='LN', eps=1e-6),
         act_cfg=dict(type='GELU'),
         use_rel_pos=False,
@@ -285,6 +286,7 @@ class Block(nn.Module):
         self.mlp = Mlp(
             in_features=dim,
             hidden_features=int(dim * mlp_ratio),
+            drop=dropout,
             act_cfg=act_cfg)
 
         self.window_size = window_size
@@ -355,6 +357,7 @@ class ViT(BaseModule):
                  mlp_ratio=4.0,
                  qkv_bias=True,
                  drop_path_rate=0.0,
+                 dropout=0.1,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  act_cfg=dict(type='GELU'),
                  use_abs_pos=True,
@@ -395,6 +398,7 @@ class ViT(BaseModule):
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 drop_path=dpr[i],
+                dropout=dropout,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 use_rel_pos=use_rel_pos,
